@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserLoginRequest;
 use App\Http\Requests\UserRegisterRequest;
+use App\Http\Resources\GeneralResource;
 use App\Http\Resources\UserResource;
 use App\Interfaces\UserRepositoryInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -40,16 +42,16 @@ class UserController extends Controller
         ) {
             $user = Auth()->user();
             $response['status'] = true;
-            $response['message'] = trans('messages.auth.login.success');
+            $response['message'] = 'Login Success.';
             $response['user'] = $user;
             $response['token'] = $user->createToken('Token')->accessToken;
             $response['user']->getPermissionsViaRoles();
         } else {
             $response['status'] = false;
-            $response['message'] = trans('messages.auth.login.failed');
+            $response['message'] = 'Login Failed!';
         }
 
-        return (new AuthLoginResource($response))->response()->setStatusCode(
+        return (new GeneralResource($response))->response()->setStatusCode(
             $response['status'] ? Response::HTTP_OK : Response::HTTP_UNAUTHORIZED
         );
     }
@@ -63,7 +65,6 @@ class UserController extends Controller
      */
     public function register(UserRegisterRequest $request): JsonResponse
     {
-        dd(345);
         $user = $this->userRepository->createUser([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
@@ -73,6 +74,7 @@ class UserController extends Controller
         $response = null;
 
         if ($user) {
+            $user->assignRole(Role::query()->where('name', '=', 'author')->first());
             $response['user'] = $user;
             $response['token'] = $user->createToken('Token')->accessToken;
             $response['user']->getPermissionsViaRoles();
@@ -94,6 +96,6 @@ class UserController extends Controller
     {
         $request->user()->token()->revoke();
 
-        return (new NullResource(null))->response()->setStatusCode(Response::HTTP_OK);
+        return (new GeneralResource(null))->response()->setStatusCode(Response::HTTP_OK);
     }
 }
