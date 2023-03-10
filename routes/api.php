@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PostController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
@@ -20,5 +21,5 @@ Route::post('/login', [UserController::class, 'login'])->name('login');
 Route::middleware('auth:api')->group(static function () {
     Route::post('/logout', [UserController::class, 'logout'])->name('logout');
 
-    //Route::apiResource('/user', UserController::class);
+    Route::apiResource('/post', PostController::class);
 });
