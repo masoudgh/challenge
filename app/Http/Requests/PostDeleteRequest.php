@@ -5,14 +5,14 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
 
-class PostUpdateRequest extends FormRequest
+class PostDeleteRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return Gate::allows('update-post', [$this->route()->post]);
+        return Gate::allows('delete-post', [$this->route()->post]);
     }
 
     /**
@@ -22,10 +22,6 @@ class PostUpdateRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'title' => ['required', 'string'],
-            'description' => ['required', 'string'],
-            'text' => ['required', 'string'],
-        ];
+        return [];
     }
 }
