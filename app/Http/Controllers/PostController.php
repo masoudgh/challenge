@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\PostCreated;
+use App\Events\PostDeleted;
 use App\Http\Requests\PostDeleteRequest;
 use App\Http\Requests\PostStoreRequest;
 use App\Http\Requests\PostUpdateRequest;
@@ -43,7 +45,10 @@ class PostController extends Controller
     public function store(PostStoreRequest $request): JsonResponse
     {
         $post = $this->postRepository->createPost(array_merge($request->validated(), ['user_id' => Auth::id()]));
+
         $post->load(['user']);
+
+        PostCreated::dispatch($post);
 
         return (new PostResource($post))->response()->setStatusCode(Response::HTTP_CREATED);
     }
@@ -85,7 +90,11 @@ class PostController extends Controller
      */
     public function destroy(PostDeleteRequest $request, Post $post): Response
     {
+        $oldPost = clone $post;
+
         $post->delete();
+
+        PostDeleted::dispatch($oldPost);
 
         return (new GeneralResource(null))->response()->setStatusCode(Response::HTTP_NO_CONTENT);
     }
